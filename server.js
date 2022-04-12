@@ -26,14 +26,17 @@ MongoClient.connect(
   }
 );
 
+// Home 화면
 app.get('/', function (req, res) {
   res.sendFile(__dirname + '/index.html');
 });
 
+// 글 작성하는 화면
 app.get('/write', function (req, res) {
   res.sendFile(__dirname + '/write.html');
 });
 
+// db에 작성된 글 데이터 보내기 (브라우저 화면에는 '전송완료' 띄움)
 app.post('/add', function (req, res) {
   // res.send 부분은 항상 존재해야
   // 전송이 성공하든 실패하든 뭔가 서버에 보내줘야 한다 (안 그러면 브라우저가 멈춤)
@@ -49,8 +52,16 @@ app.post('/add', function (req, res) {
   );
 });
 
+// db에 저장된 글 데이터 전체 조회하기
 // /list로 GET요청 접속하면
 // 실제 DB에 저장된 데이터들이 들어간 HTML 렌더링
 app.get('/list', function (req, res) {
-  res.render('list.ejs');
+  // DB에서 자료를 찾아서
+  db.collection('post')
+    .find()
+    .toArray(function (err, result) {
+      console.log(result);
+      // 찾은 자료를 EJS 파일에 넣기
+      res.render('list.ejs', { posts: result });
+    });
 });
