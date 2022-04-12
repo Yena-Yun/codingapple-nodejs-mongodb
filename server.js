@@ -51,14 +51,27 @@ app.post('/add', function (req, res) {
         { _id: totalPostCount + 1, 제목: req.body.title, 날짜: req.body.date },
         function (err, result) {
           console.log('저장완료');
+
+          // counter라는 collection의 totalPost 항목도 1 증가시켜야
+          // updateOne({ 어떤 데이터를 수정할 지 }, { $set: {수정할 값} }, function(){}: 필수 x, error 체크 시 사용)
+          // updateOne의 연산자(operator): $set(변경), $inc(증가), $min(기존값보다 적을 때만 변경), $rename(key값 이름 변경)
+          db.collection('counter').updateOne(
+            { name: '게시물갯수' },
+            // { $inc: { totalPost: 100 } => 현재의 totalPost에 100을 더함 (음수(-100)도 가능: -100으로 increment 실행)
+            // { $set: { totalPost: 1 } } => 현재의 totalPost를 1로 설정
+            { $inc: { totalPost: 1 } },
+            function (err, result) {
+              if (err) {
+                return console.log(err);
+              }
+            }
+          );
           // POST 전송 후 res.send 부분은 항상 존재해야
           // 전송이 성공하든 실패하든 뭔가 서버에 보내줘야 한다 (안 그러면 브라우저가 멈춤)
           // 간단한 응답코드를 보내거나 아니면 리다이렉트(페이지 강제이동)해줄 수도 있음
           res.send('전송완료');
         }
       );
-
-      // counter라는 collection의 totalPost 항목도 1 증가시켜야
     }
   );
 });
