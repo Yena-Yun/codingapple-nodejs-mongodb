@@ -38,16 +38,27 @@ app.get('/write', function (req, res) {
 
 // db에 작성된 글 데이터 보내기 (브라우저 화면에는 '전송완료' 띄움)
 app.post('/add', function (req, res) {
-  // res.send 부분은 항상 존재해야
-  // 전송이 성공하든 실패하든 뭔가 서버에 보내줘야 한다 (안 그러면 브라우저가 멈춤)
-  // 간단한 응답코드를 보내거나 아니면 리다이렉트(페이지 강제이동)해줄 수도 있음
-  res.send('전송완료');
-
-  // db의 collection을 가져와서 데이터 하나 추가
-  db.collection('post').insertOne(
-    { 제목: req.body.title, 날짜: req.body.date },
+  // counter라는 collection에 들어있는 데이터 중, name이 '게시물갯수'인 데이터를 찾아
+  db.collection('counter').findOne(
+    { name: '게시물갯수' },
     function (err, result) {
-      console.log('저장완료');
+      // 총 게시물 갯수를 구한다
+      let totalPostCount = result.totalPost;
+
+      // db의 post라는 collection을 가져와서 데이터 하나 추가
+      // 데이터 추가 시 _id를 기존의 총 게시물 갯수 + 1로 설정
+      db.collection('post').insertOne(
+        { _id: totalPostCount + 1, 제목: req.body.title, 날짜: req.body.date },
+        function (err, result) {
+          console.log('저장완료');
+          // POST 전송 후 res.send 부분은 항상 존재해야
+          // 전송이 성공하든 실패하든 뭔가 서버에 보내줘야 한다 (안 그러면 브라우저가 멈춤)
+          // 간단한 응답코드를 보내거나 아니면 리다이렉트(페이지 강제이동)해줄 수도 있음
+          res.send('전송완료');
+        }
+      );
+
+      // counter라는 collection의 totalPost 항목도 1 증가시켜야
     }
   );
 });
